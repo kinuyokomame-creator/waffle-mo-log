@@ -1,0 +1,26 @@
+name: ワッフル受付状況の記録
+
+on:
+  schedule:
+    # UTC 0:00〜11:55 = 日本時間 9:00〜20:55。20:30より後はスクリプト側で取得せず終了する。
+    - cron: '*/5 0-11 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: waffle
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: 取得してシートへ送信
+        run: python3 -I fetch_waffle.py
+        env:
+          WAFFLE_ENDPOINT: ${{ secrets.WAFFLE_ENDPOINT }}
+          WAFFLE_TOKEN: ${{ secrets.WAFFLE_TOKEN }}
