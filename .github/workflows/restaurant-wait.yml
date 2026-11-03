@@ -1,0 +1,26 @@
+name: レストラン待ち時間の記録
+
+on:
+  schedule:
+    # UTC 23:00〜12:45 = 日本時間 8:00〜21:45。8:30より前・21:00より後はスクリプト側で取得せず終了する。
+    - cron: '*/15 23,0-12 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: restaurant-wait
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: 取得してシートへ送信
+        run: python3 -I fetch_restaurant_wait.py
+        env:
+          RESTAURANT_ENDPOINT: ${{ secrets.RESTAURANT_ENDPOINT }}
+          RESTAURANT_TOKEN: ${{ secrets.RESTAURANT_TOKEN }}
